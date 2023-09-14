@@ -1,7 +1,7 @@
 import React from "react";
 import { ControlBar } from "@azure/communication-react";
-import CallButton from "./buttons/CallButton";
-import GroupCallButton from "./buttons/GroupCallButton";
+import CallButton from "../components/buttons/CallButton";
+import GroupCallButton from "../components/buttons/GroupCallButton";
 import { apiSocket } from "../sockets";
 
 apiSocket.on("connect_error", (error) => {
@@ -29,8 +29,8 @@ function createCall() {
 export default function OutboundCallControl() {
     return (
         <ControlBar layout="horizontal">
-            <CallButton key="call_button" onClick={createCall} />
-            <GroupCallButton key="group_call_button" onClick={() => { }} />
+            <CallButton key="call-button" onClick={createCall} />
+            <GroupCallButton key="group-call-button" onClick={() => { }} />
         </ControlBar>
     );
 }

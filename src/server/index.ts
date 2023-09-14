@@ -1,11 +1,23 @@
-import { CallAutomationClient } from "@azure/communication-call-automation";
 import { apiServer, httpServer } from "./servers";
+import { getClient, updateClient } from "./CallAutomationClient";
 
-const client = new CallAutomationClient("endpoint=https://azure-sdk-dev.communication.azure.com/;accesskey=j5yTlevc+fwGF2FLBgtlY/5TU5p4Tv0fZenzXBpHdfFgbNMruVRua9ZEjuwjNymMrIc5ikuy/2lKUhAyY20tCA==");
 const ngrok = process.env.NGROK;
 
 apiServer.on("connection", (socket) => {
     console.log("api connected");
+
+    socket.on("updateClient", (updateClientOptions, callback) => {
+        const { connectionString, options } = updateClientOptions;
+
+        try {
+            updateClient(connectionString, options);
+            callback(true);
+        } catch ( error) {
+            console.log("update failed " + error);
+            
+            callback(false);
+        }
+    })
 
     socket.on("createCall", async (createCallOptions, callback) => {
         console.log("Creating call");
@@ -13,8 +25,44 @@ apiServer.on("connection", (socket) => {
         try {
             const { targetParticipant, sourceCallIdNumber } = createCallOptions;
 
-            await client.createCall({ targetParticipant, sourceCallIdNumber }, `${ngrok}/notifications`);
+            await getClient().createCall({ targetParticipant, sourceCallIdNumber }, `${ngrok}/notifications`);
 
+            callback(true);
+        } catch (error) {
+            callback(false);
+        }
+    });
+
+    socket.on("terminate", async (terminateCallOptions, callback) => {
+        try {
+            const { isForEveryOne, callConnectionId } = terminateCallOptions;
+
+            await getClient().getCallConnection(callConnectionId).hangUp(isForEveryOne);
+            
+            callback(true);
+        } catch (error) {
+            callback(false);
+        }
+    });
+
+    socket.on("addParticipant", async (addParticipantOptions, callback) => {
+        try {
+            const { targetParticipant, callConnectionId } = addParticipantOptions;
+
+            await getClient().getCallConnection(callConnectionId).addParticipant(targetParticipant);
+            
+            callback(true);
+        } catch (error) {
+            callback(false);
+        }
+    });
+
+    socket.on("removeParticipant", async (removeParticipantOptions, callback) => {
+        try {
+            const { participant, callConnectionId } = removeParticipantOptions;
+
+            await getClient().getCallConnection(callConnectionId).removeParticipant(participant);
+            
             callback(true);
         } catch (error) {
             callback(false);

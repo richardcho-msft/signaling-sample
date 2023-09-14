@@ -1,24 +1,25 @@
-import Express from "express";
-import Path from "path";
-import Router from "./router";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import { CallAutomationClient } from "@azure/communication-call-automation";
+import { apiServer, httpServer } from "./servers";
 
-const app = Express();
-app.use(Express.static("dist"));
-app.use(Express.json());
-app.use("/", Router);
+const client = new CallAutomationClient("endpoint=https://azure-sdk-dev.communication.azure.com/;accesskey=j5yTlevc+fwGF2FLBgtlY/5TU5p4Tv0fZenzXBpHdfFgbNMruVRua9ZEjuwjNymMrIc5ikuy/2lKUhAyY20tCA==");
+const ngrok = process.env.NGROK;
 
-app.get("*", (_, res) => {
-    res.sendFile(Path.join(__dirname, "../../dist/index.html"));
-});
+apiServer.on("connection", (socket) => {
+    console.log("api connected");
 
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    path: "/callautomation/"
-});
-io.on("connection", () => {
-    console.log("connected");
+    socket.on("createCall", async (createCallOptions, callback) => {
+        console.log("Creating call");
+
+        try {
+            const { targetParticipant, sourceCallIdNumber } = createCallOptions;
+
+            await client.createCall({ targetParticipant, sourceCallIdNumber }, `${ngrok}/notifications`);
+
+            callback(true);
+        } catch (error) {
+            callback(false);
+        }
+    });
 });
 
 httpServer.listen(3000);

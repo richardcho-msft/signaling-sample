@@ -1,18 +1,17 @@
-import { ControlBarButton } from "@azure/communication-react";
-import { ButtonProps } from "@fluentui/react-components";
 import { PersonAdd20Filled } from "@fluentui/react-icons";
 import React from "react";
+import BaseButton, { IButtonProps } from "./BaseButton";
 
-export default function AddParticipantButton(props: ButtonProps) {
+export default function AddParticipantButton(props: IButtonProps) {
     const { key, onClick } = props;
 
     return (
-        <ControlBarButton
+        <BaseButton
             key={key}
             showLabel={true}
             label="add participant"
             onClick={onClick}
-            onRenderIcon={() => <PersonAdd20Filled />}
+            renderIcon={<PersonAdd20Filled />}
         />
     )
 }

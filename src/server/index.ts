@@ -29,6 +29,7 @@ apiServer.on("connection", (socket) => {
 
             callback(true);
         } catch (error) {
+            console.log(error);
             callback(false);
         }
     });

@@ -1,11 +1,47 @@
-import React from "react";
+import React, { Dispatch } from "react";
 import { eventsSocket } from "../sockets";
-import { CallAutomationEvent } from "@azure/communication-call-automation";
+import { CallAutomationEvent, CallParticipant, ParticipantsUpdated } from "@azure/communication-call-automation";
 import { Toast, ToastBody, ToastTitle, Toaster, useToastController } from "@fluentui/react-toast";
 import { useId } from "@fluentui/react-components";
+import { getIdentifierRawId } from "@azure/communication-common";
 
+export interface IEventContainerProps {
+    setCallConnectionState: Dispatch<boolean>;
+    setCallConnectionId: Dispatch<string>;
+    setCorrelationId: Dispatch<string>;
+    onParticipantsUpdated: Dispatch<CallParticipant[]>;
+}
 
-export default function EventContainer() {
+function parseEvent(event: CallAutomationEvent) {
+    const { kind, ...eventBody } = event;
+    const toastElement = Object
+        .entries(eventBody)
+        .map(([key, value]) => {
+            if (key === "participants") {
+                return (
+                    <div key={key}>
+                        <div>{`identifier: ${getIdentifierRawId(value.identifier)}`}</div>
+                        <div>{`isMuted: ${value.isMuted}`}</div>
+                    </div>
+                )
+            }
+
+            return <div key={`${key}-${value}`}>{`${key}: ${value}`}</div>;
+        });
+
+    return {
+        kind,
+        toastElement,
+    };
+}
+
+export default function EventContainer(props: IEventContainerProps) {
+    const {
+        setCallConnectionState,
+        setCallConnectionId,
+        setCorrelationId,
+        onParticipantsUpdated
+    } = props;
     const toastId = useId("callbackEvents");
     const { dispatchToast } = useToastController(toastId);
 
@@ -19,17 +55,29 @@ export default function EventContainer() {
     });
 
     eventsSocket.on("callbackEvent", (callbackEvent: CallAutomationEvent) => {
-        const { kind, ...eventBody } = callbackEvent;
-        Object.entries(eventBody).forEach(([key, value]) => { console.log(value); console.log(key); })
+        const { kind, toastElement } = parseEvent(callbackEvent);
+
+        if (kind === "CallConnected") {
+            setCallConnectionState(true);
+            setCallConnectionId(callbackEvent.callConnectionId);
+            setCorrelationId(callbackEvent.correlationId);
+        }
+
+        if (kind === "CallDisconnected") {
+            setCallConnectionState(false);
+        }
+
+        if (kind === "ParticipantsUpdated") {
+            const { participants = [] } = callbackEvent as ParticipantsUpdated;
+
+            onParticipantsUpdated(participants);
+        }
 
         dispatchToast(
             <Toast>
                 <ToastTitle>{kind}</ToastTitle>
                 <ToastBody>
-                    {/* {
-                        Object.entries(eventBody).map(([key, value]) => (
-                            <div key={key+"-"+value}>`{key}: {value}`</div>))
-                    } */}test
+                    <div>{toastElement}</div>
                 </ToastBody>
             </Toast>
         );

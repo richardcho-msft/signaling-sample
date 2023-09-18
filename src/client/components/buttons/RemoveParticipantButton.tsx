@@ -1,18 +1,17 @@
-import { ControlBarButton } from "@azure/communication-react";
-import { ButtonProps } from "@fluentui/react-components";
 import { PersonDelete20Filled } from "@fluentui/react-icons";
 import React from "react";
+import BaseButton, { IButtonProps } from "./BaseButton";
 
-export default function RemoveParticipantButton(props: ButtonProps) {
+export default function RemoveParticipantButton(props: IButtonProps) {
     const { key, onClick } = props;
 
     return (
-        <ControlBarButton
+        <BaseButton
             key={key}
             showLabel={true}
             label="remove participant"
             onClick={onClick}
-            onRenderIcon={() => <PersonDelete20Filled />}
+            renderIcon={<PersonDelete20Filled />}
         />
     )
 }

@@ -1,16 +1,17 @@
-import { ControlBarButton } from "@azure/communication-react";
 import { Call20Filled } from "@fluentui/react-icons";
 import React from "react";
-import { ButtonProps } from "./ButtonProps";
+import BaseButton, { IButtonProps } from "./BaseButton";
 
-export default function CallButton(props: ButtonProps) {
+export default function CallButton(props: IButtonProps) {
     const { key, onClick } = props;
 
     return (
-        <ControlBarButton
+        <BaseButton
+            showLabel={true}
+            label="create call"
             key={key}
             onClick={onClick}
-            onRenderIcon={() => <Call20Filled />}
+            renderIcon={<Call20Filled />}
         />
     );
 }

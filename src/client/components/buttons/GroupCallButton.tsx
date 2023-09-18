@@ -1,16 +1,17 @@
-import { ControlBarButton } from "@azure/communication-react";
 import { PeopleCall20Filled } from "@fluentui/react-icons";
 import React from "react";
-import { ButtonProps } from "./ButtonProps";
+import BaseButton, { IButtonProps } from "./BaseButton";
 
-export default function GroupCallButton(props: ButtonProps) {
+export default function GroupCallButton(props: IButtonProps) {
     const { key, onClick } = props;
 
     return (
-        <ControlBarButton
+        <BaseButton
+            showLabel={true}
+            label="create group call"
             key={key}
             onClick={onClick}
-            onRenderIcon={() => <PeopleCall20Filled />}
+            renderIcon={<PeopleCall20Filled />}
         />
     );
 }
